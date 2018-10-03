@@ -3,9 +3,6 @@
 
 
 
-// output the column headings
-fputcsv($output, array('UID', 'Audit Date', 'Manufacturer', 'Model', 'Type', 'Serial', 'CPU', 'CPU Manufacturer', 'CPU Model', 'RAM', 'RAM Type', 'RAM Voltage', 'RAM Speed', 'Disk Size', 'Disk Type', 'Disk Model', 'Disk Serial', 'Compiled Description'));
-
 // fetch the data
 
 $con2 = new mysqli("localhost", "john", "pppp", "audit");
@@ -21,6 +18,5 @@ while($row = mysqli_fetch_array($result, MYSQL_ASSOC)) {
 	echo $row
 	echo "!"
 }
-fclose($output);
 mysqli_close($con2);
 ?>
