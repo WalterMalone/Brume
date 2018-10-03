@@ -6,4 +6,4 @@ if $(git pull) == "Already up-to-date."; then
   exit
 fi
 
-cp -R html/* /var/www/html
+cp -R ../html/ /var/www/html
