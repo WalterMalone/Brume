@@ -27,7 +27,7 @@
 
 echo "begin";
     // loop over the rows, outputting them
-    while($row = mysqli_fetch_array($result, 'MYSQL_ASSOC')) {
+    while($row = mysqli_fetch_array($result, 0)) {
     	print_r($row);
     	echo $row;
     	echo "!";
