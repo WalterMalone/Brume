@@ -3,5 +3,6 @@
 cd ..
 git pull
 
-./fog\src\bin\add_scripts_to_init.bash ..
-./fog\src\bin\install_inits.bash ..
+./fog/src/bin/add_scripts_to_init.bash ..
+./fog/src/bin/install_inits.bash ..
+./bin/push_html.sh

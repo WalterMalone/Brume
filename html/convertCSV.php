@@ -20,8 +20,8 @@ $result = mysqli_query($con2, $sql)or die(mysqli_error());
 
 
 // loop over the rows, outputting them
-while($row = mysqli_fetch_array($result)) { 
-
+while($row = mysqli_fetch_array($result)) {
+print_r($row);
 	fputcsv($output, $row);
 }
 fclose($output);

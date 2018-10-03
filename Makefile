@@ -1,20 +1,24 @@
 all:
 	@echo This make file is for developers.
-	@echo run \"make update-scripts\" to put the latest scripts into the existing init files
-	@echo run \"make install-inits\" to copy the inits to /var/www/fog/...
+	@echo run \"make update\" to put the latest scripts into the existing init files
+	@echo run \"make update-html\" to copy the HTML
 #	@echo run \"make inits\" to rebuild the init files
 
 update:
 	bin/push_update.sh
 
-update-scripts:
-	bin/add_scripts_to_init.bash ..
-
-install-inits:
-	bin/install_inits.bash ..
+update-html:
+	bin/push_html.sh
 
 build-inits:
-	bin/build_inits.sh ..
+	bin/build_inits.sh
+
+#update-scripts:
+#	bin/add_scripts_to_init.bash ..
+
+#install-inits:
+#	bin/install_inits.bash ..
+
 # inits:
 # 	cd /root/buildroot;
 # 	rm -rf output/build/fog_initrd_files/;
