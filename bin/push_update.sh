@@ -5,7 +5,6 @@ if [ "$(git pull)" == "Already up-to-date." ]; then
   exit
 fi
 
-
 ./fog/src/bin/add_scripts_to_init.bash ..
 ./fog/src/bin/install_inits.bash ..
 ./bin/push_html.sh
