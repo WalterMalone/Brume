@@ -1,0 +1,182 @@
+#!/bin/bash
+. ./funcs.sh
+. ./myFuncs.sh
+##clearScreen
+##displayBanner
+disks=""
+disk=""
+
+hd="NONE"
+errors=""
+
+##getHardDisk
+sysman=""
+sysman64=""
+sysproduct=""
+sysproduct64=""
+sysversion=""
+sysversion64=""
+sysserial=""
+systype=""
+biosversion=""
+biosvendor=""
+biosdate=""
+mbman=""
+mbproductname=""
+mbversion=""
+mbserial=""
+mbasset=""
+cpuman=""
+cpuversion=""
+cpucurrent=""
+cpumax=""
+mem=""
+hdinfo=""
+caseman=""
+casever=""
+caseserial=""
+casesasset=""
+sysserial64=""
+systype64=""
+biosversion64=""
+biosvendor64=""
+biosdate64=""
+mbman64=""
+mbproductname64=""
+mbversion64=""
+mbserial64=""
+mbasset64=""
+cpuman64=""
+cpuversion64=""
+cpucurrent64=""
+cpumax64=""
+mem64=""
+hdinfo64=""
+caseman64=""
+casever64=""
+caseserial64=""
+casesasset64=""
+
+dots "Using disk device"
+echo $hd
+echo " * Starting host registration"
+mac=$(getMACAddresses | base64)
+exists=$(curl -ks --data "mac=$mac" http://${web}service/man.hostexists.php 2>/dev/null)
+checkAndSet() {
+    local testvar="$1"
+    local onlynum="$2"
+    [[ -z $testvar ]] && return
+    if [[ $onlynum =~ [Tt][Rr][Uu][Ee] && $testvar =~ ^[0-9]+$ ]]; then
+        echo $testvar | base64
+    elif [[ $testvar =~ ^[0-9,]+$ ]]; then
+        echo $testvar | base64
+    else
+        return
+    fi
+}
+setIDs() {
+    local varVar="$1"
+    local str="$2"
+    local csvstyle="$3"
+    local dummy="$4"
+    local max="$5"
+    local res=""
+    local url=""
+    local oIFS=$IFS
+    local line=""
+    while [[ -z ${!varVar} ]]; do
+        [[ $csvstyle =~ [Tt][Rr][Uu][Ee] ]] && echo -n "    Enter the $str IDs separated with , to associate with computer (? for listing): " || echo -n "    Enter the $str ID to associate with computer (? for listing): "
+        read dummy
+        dummy=$(echo $dummy | sed -e 's/^,//' -e 's/,$//')
+        case $dummy in
+            [?])
+                url="http://${web}service/${str}listing.php"
+                clearScreen
+                res=$(echo -e $(curl -ks $url 2>/dev/null))
+                i=0
+                IFS=$'\n'
+                for line in $res; do
+                    let i+=1
+                    echo $line
+                    if [[ $i -eq $max ]]; then
+                        [[ $csvstyle =~ [Tt][Rr][Uu][Ee] ]] && echo -n "    Press [Enter] to proceed or enter the $str IDs separated with , to associate with computer: " || echo -n "    Press [Enter] to proceed or enter the $str ID to associate with computer: "
+                        read dummy
+                        case $dummy in
+                            [?]|"")
+                                i=0
+                                clearScreen
+                                continue
+                                ;;
+                        esac
+                        case $csvstyle in
+                            [Tt][Rr][Uu][Ee])
+                                [[ $dummy =~ ^[0-9,]+$ ]] && printf -v "$varVar" $(checkAndSet $dummy) || setIDs "$varVar" "$str" "$csvstyle" "$dummy" "$max"
+                                break
+                                ;;
+                            *)
+                                [[ $dummy =~ ^[0-9]+$ ]] && printf -v "$varVar" $(checkAndSet $dummy "true") || setIDs "$varVar" "$str" "$csvstyle" "$dummy" "$max"
+                                break
+                                ;;
+                        esac
+                        i=0
+                        dummy=$(echo $dummy | sed -e 's/^,//' -e 's/,$//')
+                        clearScreen
+                    fi
+                done
+                ;;
+            ""|0)
+                printf -v "$varVar" 0
+                ;;
+            *)
+                dummy=$(echo $dummy | sed -e 's/^,//' -e 's/,$//')
+                [[ -z $dummy ]] && setIDs "$varVar" "$str" "$csvstyle" "$dummy" "$max"
+                case $csvstyle in
+                    [Tt][Rr][Uu][Ee])
+                        [[ $dummy =~ ^[0-9,]+$ ]] && printf -v "$varVar" $(checkAndSet $dummy) || setIDs "$varVar" "$str" "$csvstyle" "$dummy" "$max"
+                        ;;
+                    *)
+                        [[ $dummy =~ ^[0-9]+$ ]] && printf -v "$varVar" $(checkAndSet $dummy "true") || setIDs "$varVar" "$str" "$csvstyle" "$dummy" "$max"
+                        ;;
+                esac
+                ;;
+        esac
+    done
+    IFS=$oIFS
+}
+[[ $exists != "#!ok" ]] && handleError "Unable to register host: $exists ($0)\n   Args Passed: $*"
+host=""
+ip=""
+productKey=""
+imageid=""
+primaryuser=""
+other1=""
+other2=""
+blImage=""
+blDoAddGroup=""
+blDoAddSnapin=""
+keyEnter=""
+blDoAD=""
+res=""
+while [[ $res != "#!ok" ]]; do
+    echo -n " * Enter UID for this Laptop: "
+    read host
+    if [[ ${#host} -gt 15 ]]; then
+        ##host=${host:0:15}
+        echo " | Warning, UID over 15 characters"
+        errors=$errors"UID over 15 char"        
+        usleep 2000000
+    fi
+    host=$(echo $host | base64)
+    res=$(curl -ks --data "host=$host" http://${web}service/hostnameloop.php 2>/dev/null)
+    [[ $res != "#!ok" ]] && echo "$res"
+done
+
+dots "Attempting to register host"
+res=""
+while [[ -z $res ]]; do
+    res=$(curl -ks --data "mac=$mac&advanced=$(echo -n 1 | base64)&host=$host&other1=$host&other2=$errors" http://${web}service/auto.register.php 2>/dev/null)
+    echo "$res"
+    usleep 2000000
+done
+. /bin/fog.inventory
+usleep 2000000

@@ -1,0 +1,143 @@
+#!/bin/bash
+. /usr/share/fog/lib/funcs.sh
+clearScreen
+displayBanner
+disks=""
+disk=""
+
+#hd="NONE"
+errors=""
+
+getHardDisk
+sysman=""
+sysman64=""
+sysproduct=""
+sysproduct64=""
+sysversion=""
+sysversion64=""
+sysserial=""
+systype=""
+biosversion=""
+biosvendor=""
+biosdate=""
+mbman=""
+mbproductname=""
+mbversion=""
+mbserial=""
+mbasset=""
+cpuman=""
+cpuversion=""
+cpucurrent=""
+cpumax=""
+mem=""
+hdinfo=""
+caseman=""
+casever=""
+caseserial=""
+casesasset=""
+sysserial64=""
+systype64=""
+biosversion64=""
+biosvendor64=""
+biosdate64=""
+mbman64=""
+mbproductname64=""
+mbversion64=""
+mbserial64=""
+mbasset64=""
+cpuman64=""
+cpuversion64=""
+cpucurrent64=""
+cpumax64=""
+mem64=""
+hdinfo64=""
+caseman64=""
+casever64=""
+caseserial64=""
+casesasset64=""
+echo
+echo
+echo
+echo '       ▄▄▄·▐▄• ▄ ▄▄▄ .▄▄▌ ▐ ▄▌▄▄▄ . ▄▄▄·     ▄▄▄· ▄• ▄▌·▄▄▄▄  ▪  ▄▄▄▄▄'
+echo '      ▐█ ▄█ █▌█▌▪▀▄.▀·██· █▌▐█▀▄.▀·▐█ ▄█    ▐█ ▀█ █▪██▌██▪ ██ ██ •██  '
+echo '       ██▀· ·██· ▐▀▀▪▄██▪▐█▐▐▌▐▀▀▪▄ ██▀·    ▄█▀▀█ █▌▐█▌▐█· ▐█▌▐█· ▐█.▪'
+echo '      ▐█▪·•▪▐█·█▌▐█▄▄▌▐█▌██▐█▌▐█▄▄▌▐█▪·•    ▐█ ▪▐▌▐█▄█▌██. ██ ▐█▌ ▐█▌·'
+echo '      .▀   •▀▀ ▀▀ ▀▀▀  ▀▀▀▀ ▀▪ ▀▀▀ .▀        ▀  ▀  ▀▀▀ ▀▀▀▀▀• ▀▀▀ ▀▀▀ '
+echo
+echo
+echo
+echo
+echo
+dots "Checking for Disk and RAM"
+echo
+echo
+echo
+if [[ -z $hd ]]; then
+echo "      No drives found"
+else
+tput setaf 3
+echo -n "      "
+echo -n $(lsblk --bytes -dplno SIZE -I 3,8,9,179,259 | sed -e "s/.........$/ Gb/g"); lsblk -dplno ROTA -I 3,8,9,179,259 | sed -e "s/  1/HDD/;s/  0/SOLID STATE DRIVE/"
+tput setaf 7
+fi
+echo
+echo
+echo -n " " | dmidecode -t 19 | grep 'Range Size: ' | sed -e "s/Range Size: /Installed Memory: /g"
+echo
+echo
+echo " * Starting host registration"
+mac=$(getMACAddresses | base64)
+exists=$(curl -ks --data "mac=$mac" http://${web}service/man.hostexists.php 2>/dev/null)
+checkAndSet() {
+    local testvar="$1"
+    local onlynum="$2"
+    [[ -z $testvar ]] && return
+    if [[ $onlynum =~ [Tt][Rr][Uu][Ee] && $testvar =~ ^[0-9]+$ ]]; then
+        echo $testvar | base64
+    elif [[ $testvar =~ ^[0-9,]+$ ]]; then
+        echo $testvar | base64
+    else
+        return
+    fi
+}
+
+[[ $exists != "#!ok" ]] && echo HOST FOUND ##handleError "Unable to register host: $exists ($0)\n   Args Passed: $*"
+host=""
+ip=""
+productKey=""
+imageid=""
+primaryuser=""
+other1=""
+other2=""
+blImage=""
+blDoAddGroup=""
+blDoAddSnapin=""
+keyEnter=""
+blDoAD=""
+res=""
+while [[ $res != "#!ok" ]]; do
+    echo -n " * Enter UID for this Laptop: "
+echo
+echo
+echo
+    read host
+    if [[ ${#host} -gt 15 ]]; then
+        ##host=${host:0:15}
+        echo " | Warning, UID over 15 characters"
+        errors=$errors"UID over 15 char"        
+        usleep 2000000
+    fi
+    host=$(echo $host | base64)
+    res=$(curl -ks --data "host=$host" http://${web}service/hostnameloop.php 2>/dev/null)
+    [[ $res != "#!ok" ]] && echo "$res"
+done
+
+dots "Attempting to register host"
+res=""
+while [[ -z $res ]]; do
+    res=$(curl -ks --data "mac=$mac&advanced=$(echo -n 1 | base64)&host=$host&other1=$host&other2=$errors" http://${web}service/auto.register.php 2>/dev/null)
+    echo "$res"
+    usleep 2000000
+done
+. /bin/fog.inventory
+usleep 2000000
