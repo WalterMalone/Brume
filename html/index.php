@@ -17,24 +17,13 @@
 
 
 
-    <?php
-
-    $con2 = new mysqli("localhost", "john", "pppp", "audit");
-
-    $sql = "SELECT * FROM audit.sorted;";
-
-    $result = mysqli_query($con2, $sql)or die(mysqli_error());
-
-echo "begin";
-    // loop over the rows, outputting them
-    while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-    	print_r($row);
-    	echo $row;
-    	echo "!";
-    }
-    mysqli_close($con2);
+    <p><a href="./convertCSV.php">NEW32 Export CSV</a></p>
+    <p><br>
+    </p>
 
 
+
+<?php
 include './auditSort.php';
 include './shortTable.php';
 ?>

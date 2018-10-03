@@ -21,7 +21,7 @@ $result = mysqli_query($con2, $sql)or die(mysqli_error());
 
 
 // loop over the rows, outputting them
-while($row = mysqli_fetch_array($result, MYSQL_ASSOC)) {
+while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 	print_r($row);
 	echo $row
 	echo "!"
