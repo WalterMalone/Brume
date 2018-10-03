@@ -22,7 +22,8 @@ $result = mysqli_query($con2, $sql)or die(mysqli_error());
 // loop over the rows, outputting them
 while($row = mysqli_fetch_array($result, MYSQL_ASSOC)) {
 	print_r($row);
-	
+	echo $row
+	echo "!"
 	fputcsv($output, $row);
 }
 fclose($output);
